@@ -7,7 +7,6 @@ describe('Tenant isolation', () => {
   let tenantBProjectId: string;
 
   beforeAll(async () => {
-    // Tạo tenant A và đăng nhập
     await request(app).post('/auth/register').send({
       tenantName: 'Tenant A',
       email: 'a@test.com',
@@ -20,7 +19,6 @@ describe('Tenant isolation', () => {
     });
     tenantAToken = loginA.body.accessToken;
 
-    // Tạo tenant B và 1 project thuộc tenant B
     const registerB = await request(app).post('/auth/register').send({
       tenantName: 'Tenant B',
       email: 'b@test.com',
@@ -38,7 +36,7 @@ describe('Tenant isolation', () => {
       .get(`/projects/${tenantBProjectId}`)
       .set('Authorization', `Bearer ${tenantAToken}`);
 
-    // Phải trả 404 (coi như không tồn tại), KHÔNG được trả 200 kèm data
+   
     expect(res.status).toBe(404);
   });
 
