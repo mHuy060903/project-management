@@ -1,0 +1,16 @@
+import 'dotenv/config';
+
+function requireEnv(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Thiếu biến môi trường bắt buộc: ${key}`);
+  }
+  return value;
+}
+
+export const env = {
+  port: Number(process.env.PORT) || 3000,
+  databaseUrl: requireEnv('DATABASE_URL'),
+  jwtAccessSecret: requireEnv('JWT_ACCESS_SECRET'),
+  jwtRefreshSecret: requireEnv('JWT_REFRESH_SECRET'),
+};
