@@ -3,6 +3,7 @@ import { AppError } from '@/middleware/error.middleware.ts';
 import { CreateTaskInput, UpdateTaskInput, MoveTaskInput } from './tasks.validation.ts';
 import * as projectsService from '../projects/projects.service.ts';
 import { getIO } from '@/realtime/socket.ts';
+import { notificationQueue } from '@/queues/notification.queue.ts';
 export async function listTasksByProject(tenantId: string, projectId: string) {
   await projectsService.getProjectById(tenantId, projectId);
 
@@ -20,7 +21,7 @@ export async function createTask(tenantId: string, input: CreateTaskInput) {
     _max: { position: true },
   });
 
-  return prisma.task.create({
+  const task = await prisma.task.create({
     data: {
       title: input.title,
       description: input.description,
@@ -29,6 +30,19 @@ export async function createTask(tenantId: string, input: CreateTaskInput) {
       position: (maxPosition._max.position ?? -1) + 1,
     },
   });
+
+    if (task.assigneeId) {
+    const assignee = await prisma.user.findUnique({ where: { id: task.assigneeId } });
+    if (assignee) {
+      await notificationQueue.add('task-assigned', {
+        type: 'TASK_ASSIGNED',
+        recipientEmail: assignee.email,
+        payload: { taskTitle: task.title },
+      });
+    }
+  }
+
+  return task;
 }
 
 async function getTaskById(tenantId: string, taskId: string) {

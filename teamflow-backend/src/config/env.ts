@@ -13,4 +13,5 @@ export const env = {
   databaseUrl: requireEnv('DATABASE_URL'),
   jwtAccessSecret: requireEnv('JWT_ACCESS_SECRET'),
   jwtRefreshSecret: requireEnv('JWT_REFRESH_SECRET'),
+  redisUrl: requireEnv('REDIS_URL'),
 };
